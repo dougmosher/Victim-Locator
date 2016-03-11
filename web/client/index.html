@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Victim Locator #1</title>
+  <style type="text/css">
+    .container {
+      margin-top: 10%;
+      text-align: center;
+    }
+
+    #canvas-video {
+      width: 320px;
+      height: 120px;
+      border: 1px solid #ccc;
+    }
+
+    body {
+        background-color: black;
+    }
+
+    #slider {
+      width: 150px;
+      height: 5px;
+      position: relative;
+      left: 15px;
+      top: 5px;
+      margin: 10px auto;
+      background: DarkOrange;
+    }
+
+    .button {
+      background-color: #4CAF50;
+      border: none;
+      border-radius: 20px;
+      float: left;
+      color: white;
+      padding: 10px 10px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 8px;
+      margin: 4px 2px;
+      position: relative;
+      left: 315px;
+      top: 0px;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!--
+      The canvas size specified here is the "initial" internal resolution. jsmpeg will
+      change this internal resolution to whatever the source provides. The size the
+      canvas is displayed on the website is dictated by the CSS style.
+    -->
+    <canvas id="canvas-video" width="1280" height="400"></canvas>
+  </div>
+
+  <input id="slider" type="range" min="0" max="100" value="0" step="10" onchange="sliderChange(this.value)"/>
+
+  <button type="button" class="button" onclick="takePano()">Take Pano!</button>
+  <button type="button" class="button" onclick="location.href='/krpano.html';">View Pano!</button>
+
+  <script src="/jsmpg.js"></script>
+  <script type="text/javascript">
+    // CHANGE THIS TO THE APPROPRIATE WS ADDRESS
+    //var wsUrl = 'ws://victim_locator_1.local:8084/';ws://192.168.49.180:8084/';
+    //var wsUrl = 'ws://192.168.0.22:8084/';
+    var wsUrl = 'ws://192.168.49.180:8084/';
+
+    // Show loading notice
+    var canvas = document.getElementById('canvas-video');
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#333';
+    ctx.fillText('Loading...', canvas.width/2-30, canvas.height/3);
+
+    // Start the player
+    var client = new WebSocket(wsUrl);
+    var player = new jsmpeg(client, { canvas:canvas });
+
+    // Send LED level
+    var sliderChange = window.sliderChange = function(sliderValue) {
+      var controlLED = {type: "LED", level: sliderValue}
+      console.log("Slider changed: " + controlLED.type);
+      client.send(JSON.stringify(controlLED));
+    };
+
+    // Send picture command
+    var takePano = window.takePano = function() {
+      var controlPIC = {type: "PIC", lat: "49.2609973", lon: "-123.20725699999998"}
+      console.log("Slider changed: " + controlPIC.lat);
+      client.send(JSON.stringify(controlPIC));
+    };
+
+    // Get GPS coordinates
+    //function getLocation() {
+    //  if (navigator.geolocation) {
+    //      navigator.geolocation.getCurrentPosition(takePano);
+    //  } else { 
+    //      x.innerHTML = "Geolocation is not supported by this browser.";
+    //  }
+    //};
+
+  </script>
+
+</body>
+</html>
